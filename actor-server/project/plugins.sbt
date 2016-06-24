@@ -32,6 +32,8 @@ addSbtPlugin("im.actor" % "actor-sbt-houserules" % "0.1.9")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-multi-jvm" % "0.3.8")
 
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M12")
+
 libraryDependencies ++= Seq(
   "com.github.os72" % "protoc-jar" % "3.0.0-b2.1"
 )
