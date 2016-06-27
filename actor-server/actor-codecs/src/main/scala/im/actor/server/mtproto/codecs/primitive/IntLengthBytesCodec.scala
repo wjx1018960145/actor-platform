@@ -1,4 +1,4 @@
-package im.actor.server.mtproto.codecs.transport
+package im.actor.server.mtproto.codecs.primitive
 
 import scodec._
 import scodec.bits._
@@ -6,14 +6,18 @@ import scodec.{ codecs ⇒ C }
 
 import im.actor.server.mtproto.codecs._
 
-object IntLengthBitsCodec extends Codec[BitVector] {
+/**
+ * int32-prefixed bytes codec
+ */
+object IntLengthBytesCodec extends Codec[BitVector] {
+
   override def sizeBound = SizeBound.unknown
 
   override def encode(b: BitVector) = {
     for {
       // FIXME: check if fits into int32
       length ← C.int32.encode((b.length / byteSize).toInt)
-    } yield (length ++ b)
+    } yield length ++ b
   }
 
   override def decode(b: BitVector) = {

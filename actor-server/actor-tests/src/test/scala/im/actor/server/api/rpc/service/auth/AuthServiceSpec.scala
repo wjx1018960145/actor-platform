@@ -16,7 +16,7 @@ import im.actor.server._
 import im.actor.server.activation.common.ActivationConfig
 import im.actor.server.api.rpc.service.contacts.ContactsServiceImpl
 import im.actor.server.model.contact.UserContact
-import im.actor.server.mtproto.codecs.protocol.MessageBoxCodec
+import im.actor.server.mtproto.codecs.protocol.MTProtoMessageBoxCodec
 import im.actor.server.mtproto.protocol.{ MessageBox, SessionHello }
 import im.actor.server.oauth.{ GoogleProvider, OAuth2GoogleConfig }
 import im.actor.server.persist.auth.AuthTransactionRepo
@@ -1027,7 +1027,7 @@ final class AuthServiceSpec
     }
 
     private def sendSessionHello(authId: Long, sessionId: Long): Unit = {
-      val message = HandleMessageBox(ByteString.copyFrom(MessageBoxCodec.encode(MessageBox(Random.nextLong(), SessionHello)).require.toByteBuffer))
+      val message = HandleMessageBox(ByteString.copyFrom(MTProtoMessageBoxCodec.encode(MessageBox(Random.nextLong(), SessionHello)).require.toByteBuffer))
       sessionRegion.ref ! SessionEnvelope(authId, sessionId).withHandleMessageBox(message)
     }
   }

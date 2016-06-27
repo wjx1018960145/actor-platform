@@ -4,14 +4,14 @@ import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
 import shapeless._
-
 import im.actor.api.rpc.RpcError
-import im.actor.server.mtproto.codecs._
+import im.actor.server.mtproto.codecs.primitive.{ BytesCodec, StringCodec }
+import im.actor.server.mtproto.codecs.{ primitive, _ }
 
 object RpcErrorCodec extends Codec[RpcError] {
   def sizeBound = SizeBound.unknown
 
-  private val codec = (int32 :: StringCodec :: StringCodec :: BooleanCodec :: BytesCodec).exmap(
+  private val codec = (int32 :: StringCodec :: StringCodec :: primitive.BooleanCodec :: BytesCodec).exmap(
     {
       case code :: tag :: userMessage :: canTryAgain :: edData :: HNil ⇒
         tag match {

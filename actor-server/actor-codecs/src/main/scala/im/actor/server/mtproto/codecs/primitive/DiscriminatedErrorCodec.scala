@@ -1,8 +1,14 @@
-package im.actor.server.mtproto.codecs
+package im.actor.server.mtproto.codecs.primitive
 
 import scodec._
 import scodec.bits.BitVector
 
+/**
+ * Error Codec
+ *
+ * @param codecName name of source codec
+ * @tparam T type of result
+ */
 class DiscriminatedErrorCodec[T](codecName: String) extends Codec[T] {
   def sizeBound = SizeBound.unknown
 

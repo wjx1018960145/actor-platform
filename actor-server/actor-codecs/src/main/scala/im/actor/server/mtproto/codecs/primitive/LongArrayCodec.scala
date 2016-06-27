@@ -1,9 +1,14 @@
-package im.actor.server.mtproto.codecs
+package im.actor.server.mtproto.codecs.primitive
 
+import im.actor.server.mtproto.codecs._
 import scodec._
 import scodec.bits._
 
-object LongsCodec extends Codec[Vector[Long]] {
+/**
+ * Array of Longs codec
+ */
+object LongArrayCodec extends Codec[Vector[Long]] {
+
   def sizeBound = SizeBound.unknown
 
   def encode(v: Vector[Long]) = {

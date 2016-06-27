@@ -14,7 +14,7 @@ import com.typesafe.config.Config
 import com.github.kxbmap.configs.syntax._
 import im.actor.api.rpc.{ AuthData, ClientData }
 import im.actor.server.db.DbExtension
-import im.actor.server.mtproto.codecs.protocol.MessageBoxCodec
+import im.actor.server.mtproto.codecs.protocol.MTProtoMessageBoxCodec
 import im.actor.server.mtproto.protocol._
 import im.actor.server.mtproto.transport.Drop
 import im.actor.server.persist.{ AuthIdRepo, AuthSessionRepo }
@@ -151,7 +151,7 @@ final private class Session(implicit config: SessionConfig, materializer: Materi
       val waiting: Receive = {
         case _: SessionMessage ⇒
           log.warning("Reporting AuthIdInvalid and dying")
-          sender ! MessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require
+          sender ! MTProtoMessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require
           context stop self
         case msg ⇒ log.warning("Ignoring {}", msg)
       }
@@ -174,7 +174,7 @@ final private class Session(implicit config: SessionConfig, materializer: Materi
 
           val source = b.add(Source.fromPublisher(ActorPublisher[SessionStreamMessage](sessionMessagePublisher)))
           val sink = b.add(Sink.foreach[BitVector](m ⇒ clients foreach (_ ! m)))
-          val encode = b.add(Flow[MessageBox].map(MessageBoxCodec.encode(_).require))
+          val encode = b.add(Flow[MessageBox].map(MTProtoMessageBoxCodec.encode(_).require))
           val bcast = b.add(Broadcast[BitVector](2))
 
           // format: OFF
@@ -251,7 +251,7 @@ final private class Session(implicit config: SessionConfig, materializer: Materi
     }
 
   private def decodeMessageBox(messageBoxBytes: Array[Byte]): Option[MessageBox] = {
-    MessageBoxCodec.decode(BitVector(messageBoxBytes)).toEither match {
+    MTProtoMessageBoxCodec.decode(BitVector(messageBoxBytes)).toEither match {
       case Right(DecodeResult(mb, _)) ⇒ Some(mb)
       case _                          ⇒ None
     }
@@ -281,7 +281,7 @@ final private class Session(implicit config: SessionConfig, materializer: Materi
 
   private def sendAuthIdInvalidAndStop(): Unit = {
     log.warning("Reporting AuthIdInvalid and dying")
-    val authIdInvalid = MessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require
+    val authIdInvalid = MTProtoMessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require
     clients foreach (_ ! authIdInvalid)
     self ! PoisonPill
   }

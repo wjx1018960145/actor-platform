@@ -6,11 +6,11 @@ import scodec.bits.BitVector
 import scodec._
 import scala.annotation.tailrec
 
-object ContainerCodec extends Codec[Container] {
+object MTProtoContainerCodec extends Codec[Container] {
   def sizeBound = SizeBound.unknown
 
   def encode(c: Container) = {
-    val body = c.messages.map(MessageBoxCodec.encode).foldLeft(BitVector.empty)(_ ++ _.require)
+    val body = c.messages.map(MTProtoMessageBoxCodec.encode).foldLeft(BitVector.empty)(_ ++ _.require)
     val count = varint.encode(c.messages.length.toLong).require
     Attempt.successful(count ++ body)
   }
@@ -19,7 +19,7 @@ object ContainerCodec extends Codec[Container] {
     @inline @tailrec
     def f(count: Int, xs: BitVector)(items: Seq[MessageBox]): Attempt[DecodeResult[Seq[MessageBox]]] = {
       if (count > items.length) {
-        MessageBoxCodec.decode(xs) match {
+        MTProtoMessageBoxCodec.decode(xs) match {
           case Attempt.Successful(DecodeResult(MessageBox(_, _: Container), bs)) ⇒
             Attempt.failure(Err("Container cannot be nested"))
           case Attempt.Successful(DecodeResult(mb, bs)) ⇒

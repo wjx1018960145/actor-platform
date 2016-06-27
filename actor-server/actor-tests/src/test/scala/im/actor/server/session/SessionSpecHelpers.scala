@@ -7,7 +7,7 @@ import im.actor.api.rpc.{ Request, RpcRequest, RpcResult }
 import im.actor.api.rpc.codecs._
 import im.actor.api.rpc.sequence.{ FatSeqUpdate, SeqUpdate, SeqUpdateTooLong, WeakUpdate }
 import im.actor.server.api.rpc.RpcResultCodec
-import im.actor.server.mtproto.codecs.protocol.MessageBoxCodec
+import im.actor.server.mtproto.codecs.protocol.MTProtoMessageBoxCodec
 import im.actor.server.mtproto.protocol._
 import im.actor.server.session.SessionEnvelope.Payload
 import org.scalatest.Matchers
@@ -63,7 +63,7 @@ trait SessionSpecHelpers extends AbstractPatienceConfiguration with Matchers {
     } else {
       val (rest, ackIds) = messages.foldLeft(Vector.empty[(Long, ProtoMessage)], Set.empty[Long]) {
         case ((rest, ackIds), mbBytes: BitVector) ⇒
-          val mb = MessageBoxCodec.decode(mbBytes).require.value
+          val mb = MTProtoMessageBoxCodec.decode(mbBytes).require.value
 
           mb.body match {
             case MessageAck(ids) ⇒ (rest, ackIds ++ ids)
@@ -122,7 +122,7 @@ trait SessionSpecHelpers extends AbstractPatienceConfiguration with Matchers {
   protected def ignoreNewSession()(implicit probe: TestProbe): Unit = {
     probe.ignoreMsg {
       case body: BitVector ⇒
-        MessageBoxCodec.decode(body).require.value.body.isInstanceOf[NewSession]
+        MTProtoMessageBoxCodec.decode(body).require.value.body.isInstanceOf[NewSession]
       case _ ⇒ false
     }
   }
@@ -130,7 +130,7 @@ trait SessionSpecHelpers extends AbstractPatienceConfiguration with Matchers {
   protected def expectMessageBoxPF[T](hint: String = "")(pf: PartialFunction[MessageBox, T])(implicit probe: TestProbe): T = {
     probe.expectMsgPF(max = patienceConfig.timeout.totalNanos.nano) {
       case body: BitVector ⇒
-        val mb = MessageBoxCodec.decode(body).require.value
+        val mb = MTProtoMessageBoxCodec.decode(body).require.value
 
         assert(pf.isDefinedAt(mb), s"expected: $hint but got $mb")
         pf(mb)
@@ -142,14 +142,14 @@ trait SessionSpecHelpers extends AbstractPatienceConfiguration with Matchers {
       case body: BitVector ⇒ body
     }
 
-    MessageBoxCodec.decode(packageBody).require.value
+    MTProtoMessageBoxCodec.decode(packageBody).require.value
   }
 
   protected def sendMessageBox(authId: Long, sessionId: Long, session: ActorRef, messageId: Long, body: ProtoMessage)(implicit probe: TestProbe) =
     sendEnvelope(authId, sessionId, session, Payload.HandleMessageBox(handleMessageBox(messageId, body)))
 
   protected def handleMessageBox(messageId: Long, body: ProtoMessage) =
-    HandleMessageBox(ByteString.copyFrom(MessageBoxCodec.encode(MessageBox(messageId, body)).require.toByteBuffer))
+    HandleMessageBox(ByteString.copyFrom(MTProtoMessageBoxCodec.encode(MessageBox(messageId, body)).require.toByteBuffer))
 
   protected def sendEnvelope(authId: Long, sessionId: Long, session: ActorRef, payload: Payload)(implicit probe: TestProbe) = {
     session.tell(

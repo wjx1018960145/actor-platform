@@ -11,7 +11,7 @@ import com.typesafe.config.Config
 import im.actor.crypto.{ Cryptos, Curve25519 }
 import im.actor.server.db.ActorPostgresDriver.api._
 import im.actor.server.db.DbExtension
-import im.actor.server.mtproto.codecs.protocol.MessageBoxCodec
+import im.actor.server.mtproto.codecs.protocol.MTProtoMessageBoxCodec
 import im.actor.server.mtproto.protocol._
 import im.actor.server.mtproto.transport._
 import im.actor.server.persist.{ AuthIdRepo, MasterKeyRepo }
@@ -83,7 +83,7 @@ final class AuthorizationManager(serverKeys: Seq[ServerKey], sessionClient: Acto
 
   def receive = {
     case FrontendPackage(p) ⇒
-      MessageBoxCodec.decode(p.messageBytes).toEither match {
+      MTProtoMessageBoxCodec.decode(p.messageBytes).toEither match {
         case Right(res) ⇒ handleMessageBox(p.authId, p.sessionId, res.value)
         case Left(e) ⇒
           log.error("Failed to decode MessageBox: {}", e)
@@ -103,7 +103,7 @@ final class AuthorizationManager(serverKeys: Seq[ServerKey], sessionClient: Acto
 
   @inline
   private def sendPackage(sessionId: Long, messageId: Long, message: ProtoMessage) = {
-    val mbBytes = MessageBoxCodec.encode(MessageBox(messageId, message)).require
+    val mbBytes = MTProtoMessageBoxCodec.encode(MessageBox(messageId, message)).require
     enqueue(MTPackage(authId, sessionId, mbBytes))
   }
 

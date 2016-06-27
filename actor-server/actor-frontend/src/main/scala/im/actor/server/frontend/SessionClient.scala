@@ -191,7 +191,7 @@ private[frontend] final class SessionClient(sessionRegion: SessionRegion, remote
           )
           unstashAll()
         case IdsObtained(None, _) ⇒
-          enqueuePackage(T.MTPackage(pAuthId, pSessionId, MessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require))
+          enqueuePackage(T.MTPackage(pAuthId, pSessionId, MTProtoMessageBoxCodec.encode(MessageBox(Long.MaxValue, AuthIdInvalid)).require))
           onCompleteThenStop()
         case Status.Failure(e) ⇒
           log.error(e, "Failed to check authId")
@@ -236,7 +236,7 @@ private[frontend] final class SessionClient(sessionRegion: SessionRegion, remote
       }
       enqueuePackage(pack(mbBits))
     case Terminated(sessionRef) ⇒
-      val p = pack(MessageBoxCodec.encode(MessageBox(Long.MaxValue, SessionLost)).require)
+      val p = pack(MTProtoMessageBoxCodec.encode(MessageBox(Long.MaxValue, SessionLost)).require)
       enqueuePackage(p)
   }
 
