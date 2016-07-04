@@ -10,6 +10,9 @@ object Resolvers {
     Resolver.bintrayRepo("dwhjames", "maven"),
     Resolver.bintrayRepo("krasserm", "maven"),
 
+    // slick 3.1.1.2 deadlock fix
+    Resolver.bintrayRepo("kwark", "maven"),
+
     // for op-rabbit
     "The New Motion Public Repo" at "http://nexus.thenewmotion.com/content/groups/public/",
     // for akka-rabbitmq (needed by op-rabbit)
